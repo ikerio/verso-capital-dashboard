@@ -28,14 +28,14 @@ export default function Sidebar({ activeTab, setActiveTab }) {
         <div className="logo-icon" style={{ marginBottom: '0.75rem' }}>
           {/* Replace SVG with the logo image */}
           <img 
-            src="/logo.png" 
-            alt="Verso Logo" 
-            style={{
-              width: '100px',
-              height: 'auto',
-              filter: 'drop-shadow(0px 2px 4px rgba(0, 0, 0, 0.3))'
-            }} 
-          />
+  src="/verso-capital-dashboard/logo.png" 
+  alt="Verso Logo" 
+  style={{
+    width: '100px',
+    height: 'auto',
+    filter: 'drop-shadow(0px 2px 4px rgba(0, 0, 0, 0.3))'
+  }} 
+/>
         </div>
         <h1
           style={{

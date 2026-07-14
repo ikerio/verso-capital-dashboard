@@ -1,5 +1,5 @@
 // App.jsx
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { BrowserRouter as Router } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -19,6 +19,15 @@ export default function App() {
   const [investmentTier, setInvestmentTier] = useState(null);
   const [activeTab, setActiveTab] = useState('summary');
   const [lastUpdated, setLastUpdated] = useState(null);
+  const [currentADAPrice, setCurrentADAPrice] = useState(0.15); // Add ADA price state (July 2026)
+
+  // Handler for when CryptoPriceTracker updates prices.
+  // Memoized so its identity is stable — CryptoPriceTracker lists it in an
+  // effect dependency array, and an inline function here caused that effect
+  // to re-run every render (an infinite update loop).
+  const handlePriceChange = useCallback((adaPrice) => {
+    setCurrentADAPrice(adaPrice);
+  }, []);
 
   return (
     <Router>
@@ -51,7 +60,10 @@ export default function App() {
 
                 {/* Right Section: Tracker + Timestamp + Logout */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: '2rem' }}>
-                  <CryptoPriceTracker onUpdated={setLastUpdated} />
+                  <CryptoPriceTracker 
+                    onUpdated={setLastUpdated} 
+                    onPriceChange={handlePriceChange}
+                  />
                   {lastUpdated && (
                     <span style={{ fontSize: '0.875rem', color: '#9ca3af' }}>
                       Last Updated: {lastUpdated.toLocaleString('en-US', {
@@ -101,7 +113,10 @@ export default function App() {
                       exit={{ opacity: 0, y: -20 }}
                       transition={{ duration: 0.4 }}
                     >
-                      <Summary initialInvestment={investmentTier} />
+                      <Summary 
+                        initialInvestment={investmentTier} 
+                        currentADAPrice={currentADAPrice}
+                      />
                     </motion.div>
                   )}
                   {activeTab === 'performance' && (

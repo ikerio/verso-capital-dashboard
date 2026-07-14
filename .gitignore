@@ -22,3 +22,9 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# macOS AppleDouble / metadata junk
+._*
+
+# Spreadsheets (may hold contact lists / personal data — keep out of the repo)
+*.xlsx

@@ -18,7 +18,9 @@ export default function Auth({ setInvestmentTier }) {
     // Simulate API call
     setTimeout(() => {
       const tiers = {
+        'VERSO75': 7500,
         'VERSO15': 15000,
+        'VERSO16': 16800,
         'VERSO20': 20000,
         'VERSO30': 30000,
       };
@@ -57,15 +59,15 @@ export default function Auth({ setInvestmentTier }) {
         >
           {/* Logo from public folder */}
           <div style={styles.authLogo}>
-            <img 
-              src="/logo.png" 
-              alt="Verso Logo" 
-              style={{
-                width: '90px',
-                height: 'auto',
-                filter: 'drop-shadow(0px 4px 6px rgba(0, 0, 0, 0.4))'
-              }} 
-            />
+          <img 
+  src="/verso-capital-dashboard/logo.png" 
+  alt="Verso Logo" 
+  style={{
+    width: '90px',
+    height: 'auto',
+    filter: 'drop-shadow(0px 4px 6px rgba(0, 0, 0, 0.4))'
+  }} 
+/>
           </div>
         
           <h1 style={styles.authTitle}>VERSO</h1>
