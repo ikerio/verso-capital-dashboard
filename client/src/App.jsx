@@ -1,174 +1,142 @@
 // App.jsx
-import { useState, useEffect, useCallback } from 'react';
-import { BrowserRouter as Router } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useEffect, useState } from "react";
+import { AnimatePresence, MotionConfig, motion } from "framer-motion";
 
-import Auth from './components/Auth';
-import Sidebar from './components/Sidebar';
-import Summary from './components/Summary';
-import PerformanceChart from './components/PerformanceChart';
-import MarketInsights from './components/MarketInsights';
-import InvestmentMetrics from './components/InvestmentMetrics';
-import CryptoPriceTracker from './components/CryptoPriceTracker';
-import FearGreedIndex from './components/FearGreedIndex';
+import Auth from "./components/Auth";
+import Header, { VIEWS } from "./components/Header";
+import Overview from "./views/Overview";
+import Market from "./views/Market";
+import Valuation from "./views/Valuation";
+import { AS_OF, TIERS } from "./data/portfolio";
+import { fullDate } from "./lib/format";
+import { EASE } from "./lib/motion";
 
-import './styles/main.css';
+const SESSION_KEY = "verso-invested";
+const THEME_KEY = "verso-theme";
+const DARK_QUERY = window.matchMedia("(prefers-color-scheme: dark)");
+
+// Storage can be unavailable (private windows); the app works without it.
+function read(store, key) {
+  try {
+    return store.getItem(key);
+  } catch {
+    return null;
+  }
+}
+function write(store, key, value) {
+  try {
+    if (value == null) store.removeItem(key);
+    else store.setItem(key, value);
+  } catch {
+    /* ignore */
+  }
+}
+
+const viewFromHash = () => {
+  const id = window.location.hash.slice(1);
+  return VIEWS.some((v) => v.id === id) ? id : "overview";
+};
 
 export default function App() {
-  // Changed default to null so Auth shows on initial load
-  const [investmentTier, setInvestmentTier] = useState(null);
-  const [activeTab, setActiveTab] = useState('summary');
-  const [lastUpdated, setLastUpdated] = useState(null);
-  const [currentADAPrice, setCurrentADAPrice] = useState(0.15); // Add ADA price state (July 2026)
+  const [invested, setInvested] = useState(() => {
+    const saved = Number(read(sessionStorage, SESSION_KEY));
+    return Object.values(TIERS).includes(saved) ? saved : null;
+  });
+  const [view, setView] = useState(viewFromHash);
 
-  // Handler for when CryptoPriceTracker updates prices.
-  // Memoized so its identity is stable — CryptoPriceTracker lists it in an
-  // effect dependency array, and an inline function here caused that effect
-  // to re-run every render (an infinite update loop).
-  const handlePriceChange = useCallback((adaPrice) => {
-    setCurrentADAPrice(adaPrice);
+  // The theme follows the system until the investor picks one.
+  const [themeChoice, setThemeChoice] = useState(() => read(localStorage, THEME_KEY));
+  const [systemTheme, setSystemTheme] = useState(() => (DARK_QUERY.matches ? "dark" : "light"));
+  const theme = themeChoice ?? systemTheme;
+
+  useEffect(() => {
+    const onChange = (e) => setSystemTheme(e.matches ? "dark" : "light");
+    DARK_QUERY.addEventListener("change", onChange);
+    return () => DARK_QUERY.removeEventListener("change", onChange);
   }, []);
 
+  useEffect(() => {
+    if (themeChoice) document.documentElement.dataset.theme = themeChoice;
+    else delete document.documentElement.dataset.theme;
+  }, [themeChoice]);
+
+  useEffect(() => {
+    const onHash = () => setView(viewFromHash());
+    window.addEventListener("hashchange", onHash);
+    return () => window.removeEventListener("hashchange", onHash);
+  }, []);
+
+  const goTo = (id) => {
+    window.location.hash = id;
+    window.scrollTo(0, 0);
+  };
+
+  const signIn = (amount) => {
+    write(sessionStorage, SESSION_KEY, String(amount));
+    setInvested(amount);
+  };
+
+  const signOut = () => {
+    write(sessionStorage, SESSION_KEY, null);
+    setInvested(null);
+    window.history.replaceState(null, "", window.location.pathname);
+    setView("overview");
+  };
+
+  const toggleTheme = () => {
+    const next = theme === "dark" ? "light" : "dark";
+    write(localStorage, THEME_KEY, next);
+    // Colours cross-fade only while the theme is switching.
+    const root = document.documentElement;
+    root.classList.add("theme-switching");
+    window.setTimeout(() => root.classList.remove("theme-switching"), 350);
+    setThemeChoice(next);
+  };
+
   return (
-    <Router>
-      <div className="app-container">
-        {!investmentTier ? (
-          <Auth setInvestmentTier={setInvestmentTier} />
+    <MotionConfig reducedMotion="user">
+      <AnimatePresence mode="wait">
+        {!invested ? (
+          <Auth key="auth" onSignIn={signIn} />
         ) : (
-          <div className="dashboard-container" style={{ display: 'flex', minHeight: '100vh' }}>
-            {/* Sidebar */}
-            <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
-
-            {/* Main Content */}
-            <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-              {/* Header */}
-              <header style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                padding: '1.25rem 2rem',
-                backgroundColor: '#0f172a',
-                borderBottom: '1px solid #1e293b',
-              }}>
-                {/* Left Section: Branding */}
-                <div style={{ display: 'flex', flexDirection: 'column' }}>
-                  <h1 style={{ fontSize: '1.5rem', fontWeight: 700, color: '#3b82f6' }}>VERSO</h1>
-                  <span style={{ fontSize: '0.875rem', color: '#6b7280' }}>
-                    Capital Dashboard - ${(investmentTier / 1000).toFixed(0)}K Tier
-                  </span>
-                </div>
-
-                {/* Right Section: Tracker + Timestamp + Logout */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: '2rem' }}>
-                  <CryptoPriceTracker 
-                    onUpdated={setLastUpdated} 
-                    onPriceChange={handlePriceChange}
-                  />
-                  {lastUpdated && (
-                    <span style={{ fontSize: '0.875rem', color: '#9ca3af' }}>
-                      Last Updated: {lastUpdated.toLocaleString('en-US', {
-                        weekday: 'short',
-                        year: 'numeric',
-                        month: 'short',
-                        day: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit'
-                      })}
-                    </span>
-                  )}
-                  <button 
-                    onClick={() => setInvestmentTier(null)} 
-                    style={{
-                      background: 'transparent',
-                      border: '1px solid #1e293b',
-                      color: '#9ca3af',
-                      padding: '0.5rem 0.75rem',
-                      borderRadius: '0.375rem',
-                      fontSize: '0.75rem',
-                      cursor: 'pointer',
-                      transition: 'all 0.2s ease',
-                    }}
-                    onMouseOver={(e) => {
-                      e.currentTarget.style.backgroundColor = '#1e293b';
-                      e.currentTarget.style.color = '#e2e8f0';
-                    }}
-                    onMouseOut={(e) => {
-                      e.currentTarget.style.backgroundColor = 'transparent';
-                      e.currentTarget.style.color = '#9ca3af';
-                    }}
-                  >
-                    Logout
-                  </button>
-                </div>
-              </header>
-
-              {/* Tab Content */}
-              <main className="dashboard-content" style={{ padding: '2rem' }}>
-                <AnimatePresence mode="wait">
-                  {activeTab === 'summary' && (
-                    <motion.div
-                      key="summary"
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -20 }}
-                      transition={{ duration: 0.4 }}
-                    >
-                      <Summary 
-                        initialInvestment={investmentTier} 
-                        currentADAPrice={currentADAPrice}
-                      />
-                    </motion.div>
-                  )}
-                  {activeTab === 'performance' && (
-                    <motion.div
-                      key="performance"
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -20 }}
-                      transition={{ duration: 0.4 }}
-                    >
-                      <PerformanceChart />
-                    </motion.div>
-                  )}
-                  {activeTab === 'metrics' && (
-                    <motion.div
-                      key="metrics"
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -20 }}
-                      transition={{ duration: 0.4 }}
-                    >
-                      <InvestmentMetrics />
-                    </motion.div>
-                  )}
-                  {activeTab === 'insights' && (
-                    <motion.div
-                      key="insights"
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -20 }}
-                      transition={{ duration: 0.4 }}
-                    >
-                      <MarketInsights />
-                    </motion.div>
-                  )}
-                  {activeTab === 'fear-greed' && (
-                    <motion.div
-                      key="fear-greed"
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -20 }}
-                      transition={{ duration: 0.4 }}
-                    >
-                      <FearGreedIndex />
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </main>
-            </div>
-          </div>
+          <motion.div
+            key="report"
+            className="shell"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.4, ease: EASE }}
+          >
+            <Header
+              view={view}
+              onView={goTo}
+              invested={invested}
+              theme={theme}
+              onToggleTheme={toggleTheme}
+              onSignOut={signOut}
+            />
+            <AnimatePresence mode="wait">
+              <motion.main
+                key={view}
+                className="container page"
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.16, ease: "easeIn" }}
+              >
+                {view === "overview" && <Overview invested={invested} onView={goTo} />}
+                {view === "market" && <Market />}
+                {view === "valuation" && <Valuation invested={invested} />}
+              </motion.main>
+            </AnimatePresence>
+            <footer className="container foot">
+              <p>
+                Values from June 2025 onward are model estimates, not prices at which the position can be sold. Market
+                data as of {fullDate(AS_OF)}. This report is for Verso Capital investors and is not investment advice.
+              </p>
+              <p>© 2026 Verso Capital</p>
+            </footer>
+          </motion.div>
         )}
-      </div>
-    </Router>
+      </AnimatePresence>
+    </MotionConfig>
   );
 }
