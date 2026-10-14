@@ -104,7 +104,7 @@ export const HOLDINGS = [
     name: "NFTs",
     share: 0.93,
     liquid: false,
-    note: "Infinity Rising game assets and art/collectibles. None sold.",
+    note: "Utility NFTs that can earn tokens, such as Infinity Rising game assets, and art and collectibles. None sold.",
   },
   { name: "Staking rewards", share: 0.03, liquid: true, note: "Earned by staking and holding the NFTs." },
   {
