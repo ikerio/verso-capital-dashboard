@@ -34,7 +34,7 @@ export default function Valuation({ invested }) {
       key: "floor",
       name: "Assumed NFT floor",
       share: parts.floor,
-      how: "A fixed minimum we assume rare NFTs keep. No sale has confirmed it.",
+      how: "A fixed minimum we assume rare NFTs keep. No sale has tested it yet.",
     },
   ];
   const saleLow = roundTo(SALE_ESTIMATE.low * invested);
@@ -166,13 +166,17 @@ export default function Valuation({ invested }) {
             </dt>
             <dd className="pair-value">{usd(Math.round(CURRENT.share * invested))}</dd>
             <dd>
-              {pct(CURRENT.share)} of invested. What our model says the position is worth today. It assumes the NFTs
-              keep a minimum value that the market has not confirmed.
+              {pct(CURRENT.share)} of invested. What our model says the position is worth today. It assumes the rare
+              NFTs keep a minimum value that no sale has tested yet.
             </dd>
           </div>
         </dl>
         <p className="prose">
-          The gap is the assumed NFT floor and the absence of buyers. In July we cut the sale estimate to 5&ndash;10%
+          The two figures answer different questions, but they have the same cause: almost nobody is buying. Only
+          common pieces are trading, so no sale has tested the assumed minimum value of our rare NFTs, in either
+          direction. And with so few buyers, a quick sale would mean seeking out collectors one by one and accepting
+          whatever they offered, which means a steep discount. That discount is the price of selling in a hurry, and
+          it is why we are not selling. In July we cut the sale estimate to 5&ndash;10%
           because the main marketplace had just closed. We have raised it to {pct(SALE_ESTIMATE.low, 0)}&ndash;
           {pct(SALE_ESTIMATE.high, 0)}: NFTs are priced in ADA, which is up by roughly half since mid-July, and a
           successor marketplace is operating. It stays below April&rsquo;s 10&ndash;15% because trading there is still
@@ -205,8 +209,8 @@ export default function Valuation({ invested }) {
               price on the last day of each month, and on {fullDate(AS_OF)} for October.
             </li>
             <li>
-              The assumed NFT floor is the weakest part of the model. If it proves too high, the model value is
-              overstated by up to {pct(parts.floor)} of your investment.
+              The assumed NFT floor accounts for {pct(parts.floor)} of your investment. Because rare pieces are not
+              trading, no sale has tested it, in either direction.
             </li>
             <li>The figures are before any fees due on exit.</li>
           </ul>

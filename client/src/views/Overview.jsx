@@ -15,6 +15,7 @@ import {
   REPORTS,
   SALE_ESTIMATE,
   marketOn,
+  modelParts,
 } from "../data/portfolio";
 import { adaPrice, fullDate, monthYear, pct, roundTo, signedPct, signedUsd, toTime, usd } from "../lib/format";
 import { EASE, rise } from "../lib/motion";
@@ -297,7 +298,8 @@ export default function Overview({ invested, onView }) {
               70% below its May 2025 level.
             </li>
             <li>
-              More than 40% of the model value rests on an assumed floor for the NFTs that no sale has confirmed.
+              Of the {pct(CURRENT.share)} the model shows, {(modelParts(CURRENT.ada).floor * 100).toFixed(1)} points
+              come from an assumed floor for the rare NFTs, which no sale has tested yet.
             </li>
             <li>Nothing has been bought or sold since the {REPORT.previousLabel}. We continue to hold.</li>
           </ul>
