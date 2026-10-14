@@ -37,7 +37,6 @@ export default function Valuation({ invested }) {
       how: "A fixed minimum we assume rare NFTs keep. No sale has confirmed it.",
     },
   ];
-  const liquidShare = HOLDINGS.filter((h) => h.liquid).reduce((sum, h) => sum + h.share, 0);
   const saleLow = roundTo(SALE_ESTIMATE.low * invested);
   const saleHigh = roundTo(SALE_ESTIMATE.high * invested);
 
@@ -183,16 +182,11 @@ export default function Valuation({ invested }) {
 
       <div className="grid-2">
         <Card title="What you hold" subtitle="Approximate share of the model value">
-          <motion.div className="stack" aria-hidden="true" {...wipe(0.2)}>
-            <span className="stack-seg stack-seg--ink" style={{ flexGrow: (1 - liquidShare) * 1000 }} />
-            <span className="stack-seg stack-seg--muted" style={{ flexGrow: liquidShare * 1000 }} />
-          </motion.div>
           <table className="table table--plain">
             <tbody>
               {HOLDINGS.map((h) => (
                 <tr key={h.name}>
                   <th scope="row">
-                    <span className={`swatch ${h.liquid ? "stack-seg--muted" : "stack-seg--ink"}`} aria-hidden="true" />
                     {h.name}
                     <span className="cell-note">{h.note}</span>
                   </th>

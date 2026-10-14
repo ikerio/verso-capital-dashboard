@@ -962,7 +962,7 @@ a {
 
 .cell-note {
   display: block;
-  margin: 2px 0 0 18px;
+  margin-top: 2px;
   color: var(--text-2);
   font-size: 13px;
   font-weight: 400;
@@ -1109,14 +1109,6 @@ a {
 
 .stack-seg--floor {
   background: var(--series-3);
-}
-
-.stack-seg--ink {
-  background: var(--text-2);
-}
-
-.stack-seg--muted {
-  background: var(--axis);
 }
 
 .swatch {

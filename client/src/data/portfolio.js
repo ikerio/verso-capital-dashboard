@@ -97,17 +97,23 @@ export const LAST_MARKET_PRICED = [...HISTORY].reverse().find((h) => !h.estimate
 // share of the amount invested. This is a judgement, not a model output.
 export const SALE_ESTIMATE = { low: 0.07, high: 0.12 };
 
-// Approximate make-up of the position by model value.
+// Approximate make-up of the position by model value. Category names match
+// the ones investors have seen since the July report.
 export const HOLDINGS = [
   {
-    name: "Cardano NFTs",
+    name: "NFTs",
     share: 0.93,
     liquid: false,
-    note: "None sold. Thinly traded, so they cannot be sold near the model value.",
+    note: "Infinity Rising game assets and art/collectibles. None sold.",
   },
-  { name: "Staked ADA", share: 0.03, liquid: true, note: "Earning staking rewards; can be unstaked and sold." },
-  { name: "ADA", share: 0.02, liquid: true, note: "Tradeable at any time." },
-  { name: "Cash", share: 0.02, liquid: true, note: "Held in reserve." },
+  { name: "Staking rewards", share: 0.03, liquid: true, note: "Earned by staking and holding the NFTs." },
+  {
+    name: "Cardano (ADA) and native tokens",
+    share: 0.02,
+    liquid: true,
+    note: "Mostly tokens received for holding the NFTs.",
+  },
+  { name: "Cash reserve", share: 0.02, liquid: true, note: "Held in reserve." },
 ];
 
 // Every figure we have reported, exactly as it was sent.
